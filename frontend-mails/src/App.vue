@@ -1,21 +1,17 @@
 <template>
   <div id="wrapper">
-  <nav id=navbar class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand">Prueba técnica Truora</a>
-    
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <form class="form-inline my-2 my-lg-0" @submit.prevent="sendRequest">
-      <div>
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" v-model="message">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
+    <nav id=navbar class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand">Mamuro Email</a>
+        <form class="d-flex" role="search" @submit.prevent="sendRequest">
+          <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" v-model="message">
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
       </div>
-    </form>
-    </div>
-  </nav>
+    </nav>
 
 
-
-  <div id=tablediv class="table-wrapper-scroll-y my-custom-scrollbar">
+    <div id=tablediv class="table-wrapper-scroll-y my-custom-scrollbar">
 
     <table id="tableResponses" class="table table-striped table-bordered table-sm">
       <thead>
@@ -24,8 +20,8 @@
       <td>To</td>
     </thead>
       <tbody>
-          <tr v-for="todo in todos" :key="todo">
-          <td @click="getMessage(todo._source)">{{todo._source.Subject}}</td>
+          <tr v-for="todo in todos" :key="todo" @click="getMessage(todo._source)">
+          <td>{{todo._source.Subject}}</td>
           <td>{{todo._source.From}}</td>
           <td>{{todo._source.To}}</td>
 
@@ -102,10 +98,16 @@
 #navbar {
   position: fixed;
   width: 100%;
+  height: 10%;
+  background-color: #e3f2fd;
 
 }
 table, th, td {
   border: 1px solid;
+}
+
+#tablediv tr:hover{
+  background-color: #e3f2fd;
 }
 
 #msgdiv{
