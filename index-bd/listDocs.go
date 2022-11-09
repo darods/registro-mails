@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,7 +35,7 @@ func insertData(filename string) {
 }
 
 func writeNDJson(filename string, jsonStr []byte) {
-	dataInfo := "{ \"index\" : { \"_index\" : \"emails\" } } "
+	dataInfo := "{ \"index\" : { \"_index\" : \"emails_2\" } } "
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -45,6 +47,28 @@ func writeNDJson(filename string, jsonStr []byte) {
 	if _, err := f.Write(jsonStr); err != nil {
 		log.Println(err)
 	}
+}
+
+func writeDirect(jsonStr []byte) {
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails2/_doc", strings.NewReader(string(jsonStr)))
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth("admin", "Complexpass#123")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	log.Println(resp.StatusCode)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(body))
 }
 
 func deleteFile(filename string) {
@@ -116,8 +140,7 @@ func main() {
 			if err != nil {
 				fmt.Printf("Error: %s", err.Error())
 			}
-			writeNDJson(path+".ndjson", jsonStr)
-			insertData(path + ".ndjson")
+			writeDirect(jsonStr)
 
 		}
 
