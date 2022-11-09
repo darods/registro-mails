@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
+	"sync"
 )
 
 func insertData(filename string) {
@@ -50,7 +50,7 @@ func writeNDJson(filename string, jsonStr []byte) {
 }
 
 func writeDirect(jsonStr []byte) {
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails2/_doc", strings.NewReader(string(jsonStr)))
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails3/_doc", strings.NewReader(string(jsonStr)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,75 +78,89 @@ func deleteFile(filename string) {
 	}
 }
 
-func main() {
-	err := filepath.Walk("./enron_mail_20110402/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		//fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
-		// Si no es un directorio
-		if !info.IsDir() {
-			file, err := os.Open(path)
-			defer file.Close()
-			scanner := bufio.NewScanner(file)
-			var wordlines []string
-			for scanner.Scan() {
-				wordlines = append(wordlines, scanner.Text())
-			}
-
-			dict := map[string]string{
-				"Message-ID":                "",
-				"Date":                      "",
-				"From":                      "",
-				"To":                        "",
-				"Subject":                   "",
-				"Mime-Version":              "",
-				"Content-Type":              "",
-				"Content-Transfer-Encoding": "",
-				"X-From":                    "",
-				"X-To":                      "",
-				"X-cc":                      "",
-				"X-bcc":                     "",
-				"X-Folder":                  "",
-				"X-Origin":                  "",
-				"X-FileName":                "",
-				"Message":                   "",
-			}
-			compareString := []string{"Message-ID", "Date", "From", "To", "Subject", "Mime-Version", "Content-Type", "Content-Transfer-Encoding", "X-From", "X-To", "X-cc", "X-bcc", "X-Folder", "X-Origin", "X-FileName"}
-
-			aux := ""
-			for _, words := range wordlines {
-				msg := compareString[0]
-				res := strings.Index(words, msg)
-
-				if res == 0 {
-					words = strings.Replace(words, msg+": ", "", 1)
-					dict[msg] += words
-					aux = msg
-					if len(compareString) != 1 {
-						compareString = compareString[1:]
-					} else {
-						compareString[0] = "Message"
-						aux = "Message"
-					}
-
-				} else {
-					dict[aux] += words
-				}
-			}
-
-			jsonStr, err := json.Marshal(dict)
-			if err != nil {
-				fmt.Printf("Error: %s", err.Error())
-			}
-			writeDirect(jsonStr)
-
-		}
-
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err)
+func uploadFile(path string) {
+	//fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
+	// Si no es un directorio
+	file, err := os.Open(path)
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	var wordlines []string
+	for scanner.Scan() {
+		wordlines = append(wordlines, scanner.Text())
 	}
+
+	dict := map[string]string{
+		"Message-ID":                "",
+		"Date":                      "",
+		"From":                      "",
+		"To":                        "",
+		"Subject":                   "",
+		"Mime-Version":              "",
+		"Content-Type":              "",
+		"Content-Transfer-Encoding": "",
+		"X-From":                    "",
+		"X-To":                      "",
+		"X-cc":                      "",
+		"X-bcc":                     "",
+		"X-Folder":                  "",
+		"X-Origin":                  "",
+		"X-FileName":                "",
+		"Message":                   "",
+	}
+	compareString := []string{"Message-ID", "Date", "From", "To", "Subject", "Mime-Version", "Content-Type", "Content-Transfer-Encoding", "X-From", "X-To", "X-cc", "X-bcc", "X-Folder", "X-Origin", "X-FileName"}
+
+	aux := ""
+	for _, words := range wordlines {
+		msg := compareString[0]
+		res := strings.Index(words, msg)
+
+		if res == 0 {
+			words = strings.Replace(words, msg+": ", "", 1)
+			dict[msg] += words
+			aux = msg
+			if len(compareString) != 1 {
+				compareString = compareString[1:]
+			} else {
+				compareString[0] = "Message"
+				aux = "Message"
+			}
+
+		} else {
+			dict[aux] += words
+		}
+	}
+
+	jsonStr, err := json.Marshal(dict)
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	}
+	writeDirect(jsonStr)
+
+}
+func uploadPararell(wg *sync.WaitGroup, path string) {
+	fmt.Println("reading file: ", path)
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+		uploadFile(scanner.Text())
+	}
+	wg.Done()
+}
+
+func main() {
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(4)
+
+	// Give some time for listenForever to start
+	go uploadPararell(&waitGroup, "./files1.txt")
+	go uploadPararell(&waitGroup, "./files2.txt")
+	go uploadPararell(&waitGroup, "./files3.txt")
+	go uploadPararell(&waitGroup, "./files4.txt")
+	waitGroup.Wait()
+
 }
