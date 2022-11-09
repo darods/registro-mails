@@ -81,13 +81,13 @@ func getZincSearch(w http.ResponseWriter, r *http.Request) {
         {
             "term": "` + term + `",
             "start_time": "2022-10-01T14:28:31.894Z",
-            "end_time": "2022-10-24T15:28:31.894Z"
+            "end_time": "2022-11-24T15:28:31.894Z"
         },
         "from": 0,
         "max_results": 20,
         "_source": []
     }`
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails/_search", strings.NewReader(query))
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails2/_search", strings.NewReader(query))
 	if err != nil {
 		log.Fatal(err)
 	}

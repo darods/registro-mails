@@ -1,26 +1,27 @@
 <template>
   <div id="wrapper">
-  <div id="top-nav">
-    <form @submit.prevent="sendRequest">
-      <div>
-        <label for="userId">Buscar </label>
-        <input for="text" id="userId" v-model="message">
-        <button>Enviar</button>  
+    <nav id=navbar class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand">Mamuro Email</a>
+        <form class="d-flex" role="search" @submit.prevent="sendRequest">
+          <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" v-model="message">
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
       </div>
-    </form>
+    </nav>
 
-  </div>
 
-  <div style="width: 600px; float: left;">
-    <table>
+    <div id=tablediv class="table-wrapper-scroll-y my-custom-scrollbar">
+
+    <table id="tableResponses" class="table table-striped table-bordered table-sm">
+      <thead>
       <td>Subject</td>
       <td>From</td>
       <td>To</td>
-    </table>
-    <table id="tableResponses">
+    </thead>
       <tbody>
-          <tr v-for="todo in todos" :key="todo">
-          <td @click="getMessage(todo._source)">{{todo._source.Subject}}</td>
+          <tr v-for="todo in todos" :key="todo" @click="getMessage(todo._source)">
+          <td>{{todo._source.Subject}}</td>
           <td>{{todo._source.From}}</td>
           <td>{{todo._source.To}}</td>
 
@@ -31,7 +32,8 @@
       </tbody>
     </table>
   </div>
-  <div id="divMsg">{{msg}}</div>
+  <div id= msgdiv class="overflow-auto p-3 bg-light">{{msg}}</div>
+
 </div>
 </template>
 
@@ -90,32 +92,52 @@
 <style>
 #wrapper {
   width: 100%;
+  height: 100%;
   background-color: #fff;
 }
-#top-nav {
+#navbar {
   position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 60px;
   width: 100%;
-  background-color: green;
+  height: 10%;
+  background-color: #e3f2fd;
+
 }
 table, th, td {
   border: 1px solid;
 }
-#entryBox{
-  padding-bottom: 3%;
-  position: fixed;
+
+#tablediv tr:hover{
+  background-color: #e3f2fd;
 }
-#divMsg{
-  margin-left: 1020px;
-  position:fixed;
-  overflow-y: auto;
+
+#msgdiv{
+  margin-left: 60%;
+  margin-top: 5%;
+  max-width: fit-content; 
+  max-height: 800px;
+  position: fixed;
   
 }
 #tableResponses{
   overflow-y: auto;
+  width: fit-content;
+  height: fit-content;
+}
+
+#tablediv{
+  margin-top: 5%;
+  width: 60%; 
+  float: left;
+  height: 800px;
+}
+
+.my-custom-scrollbar {
+position: relative;
+height: 200px;
+overflow: auto;
+}
+.table-wrapper-scroll-y {
+display: block;
 }
 
 </style>

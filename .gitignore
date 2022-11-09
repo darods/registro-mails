@@ -6,3 +6,4 @@ data.ndjson
 *ndjson
 test.json
 *.pdf
+files*
