@@ -1,4 +1,4 @@
-package main
+package functions
 
 import (
 	"bufio"
@@ -11,25 +11,24 @@ import (
 	"runtime"
 )
 
+// escribe un archivo de texto todas las rutas encontradas en una carpeta
 func readfiles(path string) {
-	f, err1 := os.Create("files.txt")
-	if err1 != nil {
-		log.Fatal(err1)
+	f, err := os.Create("files.txt")
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer f.Close()
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println(err)
-			return err
+			log.Fatal(err)
 		}
-		//fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
-		// Si no es un directorio
+		//Escribe ruta si esta no es un directorio
 		if !info.IsDir() {
 			fmt.Println(path)
-			_, err2 := f.WriteString(path + "\n")
+			_, err = f.WriteString(path + "\n")
 
-			if err2 != nil {
-				log.Fatal(err2)
+			if err != nil {
+				log.Fatal(err)
 			}
 
 		}
@@ -41,7 +40,8 @@ func readfiles(path string) {
 	}
 }
 
-func LineCounter(r io.Reader) (int, error) {
+//cuenta lineas escritas que tiene un archivo
+func lineCounter(r io.Reader) (int, error) {
 
 	var count int
 	const lineBreak = '\n'
@@ -71,10 +71,11 @@ func LineCounter(r io.Reader) (int, error) {
 	return count, nil
 }
 
-func CopyLines(fname string, from, to int, file string) {
-	n_f, err1 := os.Create(file)
-	if err1 != nil {
-		log.Fatal(err1)
+//copia un intervalo de lineas de un archivo a otro
+func copyLines(fname string, from, to int, newFile string) {
+	new_file, err := os.Create(newFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 	f, err := os.Open(fname)
 	if err != nil {
@@ -91,15 +92,17 @@ func CopyLines(fname string, from, to int, file string) {
 		if n > to {
 			break
 		}
-		_, err2 := n_f.WriteString(scanner.Text() + "\n")
-		if err2 != nil {
-			log.Fatal(err2)
+		_, err = new_file.WriteString(scanner.Text() + "\n")
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
 }
 
-func getSeparation(nlines int) []int {
+// obtiene intarvalos en los que divide la cantidad total de archivos para utilizar los
+// 4 nucleos que tiene mi computador
+func getSlices(nlines int) []int {
 	numCpu := runtime.NumCPU()
 	var slices [5]int
 	slices[0] = 0
@@ -115,20 +118,20 @@ func getSeparation(nlines int) []int {
 	return slices[:]
 }
 
-func main() {
-	fmt.Printf("analizando carpeta")
-	readfiles("./enron_mail_20110402/")
+// crea los archivos con las rutas a ser procesadas por cada uno de los nucleos
+func MakeFiles(path string) {
+	readfiles(path)
 	file, err := os.Open("files.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer file.Close()
-	lines, err2 := LineCounter(file)
+	lines, err2 := lineCounter(file)
 	if err2 != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("lineas: %i", lines)
-	slices := getSeparation(lines)
+	slices := getSlices(lines)
 	fmt.Println(slices)
 	var filenames [4]string
 	filenames[0] = "files1.txt"
@@ -137,7 +140,7 @@ func main() {
 	filenames[3] = "files4.txt"
 	for i := 0; i < 4; i++ {
 		fmt.Println("slice: [", slices[i], " : ", slices[i+1]-1, "], filename: ", filenames[i])
-		CopyLines("files.txt", slices[i], slices[i+1]-1, filenames[i])
+		copyLines("files.txt", slices[i], slices[i+1]-1, filenames[i])
 	}
 
 }
