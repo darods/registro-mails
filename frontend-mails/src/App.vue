@@ -72,12 +72,9 @@
         this.msg = item.Message
       },
       sendRequestReset() {
-        axios.post("http://localhost:8081/api/getZincSearch?term="+this.message+"&from=0&to=20")
-            .then(response => {
-              console.log(response)
-              this.todos = response.data
-      })
-      .catch(e => console.log(e))
+        this.from=0
+        this.to=20
+        this.sendRequest(this.from, this.to)
 
     },
     sendRequest(from, to) {
