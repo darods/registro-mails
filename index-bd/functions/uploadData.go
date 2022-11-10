@@ -1,4 +1,4 @@
-package main
+package functions
 
 import (
 	"bufio"
@@ -8,49 +8,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
-	"sync"
 )
 
-func insertData(filename string) {
-	app := "curl"
-	arg0 := "http://localhost:4080/api/_bulk"
-	arg1 := "-i"
-	arg2 := "-u"
-	arg3 := "admin:Complexpass#123"
-	arg4 := "--data-binary"
-	arg5 := "@" + filename
-
-	cmd := exec.Command(app, arg0, arg1, arg2, arg3, arg4, arg5)
-	stdout, err := cmd.Output()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(stdout))
-	fmt.Println(filename + " insertado con exito")
-
-	deleteFile(filename)
-
-}
-
-func writeNDJson(filename string, jsonStr []byte) {
-	dataInfo := "{ \"index\" : { \"_index\" : \"emails_2\" } } "
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	if _, err := f.WriteString(dataInfo + "\n"); err != nil {
-		log.Println(err)
-	}
-	if _, err := f.Write(jsonStr); err != nil {
-		log.Println(err)
-	}
-}
-
-func writeDirect(jsonStr []byte) {
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails3/_doc", strings.NewReader(string(jsonStr)))
+// sube directo informacion json a zincsearch
+func writeDirect(jsonStr []byte, database string) {
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/"+database+"/_doc", strings.NewReader(string(jsonStr)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,16 +34,8 @@ func writeDirect(jsonStr []byte) {
 	fmt.Println(string(body))
 }
 
-func deleteFile(filename string) {
-	e := os.Remove(filename)
-	if e != nil {
-		log.Fatal(e)
-	}
-}
+func UploadFile(path string, database string) {
 
-func uploadFile(path string) {
-	//fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
-	// Si no es un directorio
 	file, err := os.Open(path)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -134,33 +89,52 @@ func uploadFile(path string) {
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 	}
-	writeDirect(jsonStr)
+	writeDirect(jsonStr, database)
 
 }
-func uploadPararell(wg *sync.WaitGroup, path string) {
-	fmt.Println("reading file: ", path)
-	f, err := os.Open(path)
+
+/*
+func insertData(filename string) {
+	app := "curl"
+	arg0 := "http://localhost:4080/api/_bulk"
+	arg1 := "-i"
+	arg2 := "-u"
+	arg3 := "admin:Complexpass#123"
+	arg4 := "--data-binary"
+	arg5 := "@" + filename
+
+	cmd := exec.Command(app, arg0, arg1, arg2, arg3, arg4, arg5)
+	stdout, err := cmd.Output()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+	}
+	fmt.Println(string(stdout))
+	fmt.Println(filename + " insertado con exito")
+
+	deleteFile(filename)
+
+}
+
+func writeNDJson(filename string, jsonStr []byte) {
+	dataInfo := "{ \"index\" : { \"_index\" : \"emails_2\" } } "
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
 	}
 	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-		uploadFile(scanner.Text())
+	if _, err := f.WriteString(dataInfo + "\n"); err != nil {
+		log.Println(err)
 	}
-	wg.Done()
+	if _, err := f.Write(jsonStr); err != nil {
+		log.Println(err)
+	}
 }
 
-func main() {
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(4)
 
-	// Give some time for listenForever to start
-	go uploadPararell(&waitGroup, "./files1.txt")
-	go uploadPararell(&waitGroup, "./files2.txt")
-	go uploadPararell(&waitGroup, "./files3.txt")
-	go uploadPararell(&waitGroup, "./files4.txt")
-	waitGroup.Wait()
-
+func deleteFile(filename string) {
+	e := os.Remove(filename)
+	if e != nil {
+		log.Fatal(e)
+	}
 }
+*/
