@@ -12,6 +12,8 @@ import (
 
 func GetZincSearch(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
+	from := r.URL.Query().Get("from")
+	to := r.URL.Query().Get("to")
 	query := `{
         "search_type": "match",
         "query":
@@ -20,8 +22,8 @@ func GetZincSearch(w http.ResponseWriter, r *http.Request) {
             "start_time": "2022-10-01T14:28:31.894Z",
             "end_time": "2022-11-24T15:28:31.894Z"
         },
-        "from": 0,
-        "max_results": 20,
+        "from": ` + from + `,
+        "max_results": ` + to + `,
         "_source": []
     }`
 	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails3/_search", strings.NewReader(query))

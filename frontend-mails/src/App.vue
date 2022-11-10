@@ -3,7 +3,11 @@
     <nav id=navbar class="navbar navbar-dark bg-dark">
       <div class="container-fluid">
         <a class="navbar-brand">Mamuro Email</a>
-        <form class="d-flex" role="search" @submit.prevent="sendRequest">
+        <button class="btn btn-outline-success" type="button" @click="disminuir">Anterior</button>
+        <button class="btn btn-outline-success" type="button" @click="aumentar">Siguiente</button>
+        <p id="rango">mostrando datos [{{from}}, {{to}}]</p>
+        <form class="d-flex" role="search" @submit.prevent="sendRequestReset">
+          
           <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" v-model="message">
           <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
@@ -45,9 +49,8 @@
         todos:null,
         msg:null,
         message:null,
-        userId: '',
-        title: '',
-        name: '',
+        from: 0,
+        to: 20
       }
     },
     mounted(){
@@ -56,8 +59,7 @@
     methods:{
       getTodos(){
         console.log('codigo get TODOS.')
-        //axios.get('http://jsonplaceholder.typicode.com/posts')
-        axios.post('http://localhost:8081/api/getZincSearch?term=manipulated')
+        axios.post('http://localhost:8081/api/getZincSearch?term=manipulated&from=0&to=20')
         .then(response => {
           console.log(response)
           this.todos = response.data
@@ -69,8 +71,8 @@
         console.log('me hicieron clic '+item.Message)
         this.msg = item.Message
       },
-      sendRequest() {
-        axios.post("http://localhost:8081/api/getZincSearch?term="+this.message)
+      sendRequestReset() {
+        axios.post("http://localhost:8081/api/getZincSearch?term="+this.message+"&from=0&to=20")
             .then(response => {
               console.log(response)
               this.todos = response.data
@@ -78,13 +80,33 @@
       .catch(e => console.log(e))
 
     },
-    createPost(){
-      axios.post("http://localhost:8081/nameExample?name="+this.name)
-      .then(response => {
-        console.log(response);
+    sendRequest(from, to) {
+        axios.post("http://localhost:8081/api/getZincSearch?term="+this.message+"&from="+from+"&to="+to)
+            .then(response => {
+              console.log(response)
+              this.todos = response.data
       })
       .catch(e => console.log(e))
-    }
+
+    },
+      aumentar(){
+        this.from += 20
+        this.to +=20
+        console.log("from: "+this.from+" to: "+this.to)
+        this.sendRequest(this.from, this.to)
+      },
+      disminuir(){
+        if(this.from != 0){
+          this.from -= 20
+          this.to -=20
+        }else{
+          this.from = 0
+          this.to =20
+        }
+        
+        console.log("from: "+this.from+" to: "+this.to)
+        this.sendRequest(this.from, this.to)
+      }
     }
   }
 </script>
@@ -101,6 +123,9 @@
   height: 10%;
   background-color: #e3f2fd;
 
+}
+#rango{
+  color: #fff;
 }
 table, th, td {
   border: 1px solid;
