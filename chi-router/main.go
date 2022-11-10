@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"apiRouter.com/chi/cmd"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 )
@@ -31,16 +32,10 @@ func main() {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Hello World!"))
+		w.Write([]byte("API funcionando!"))
 	})
-	r.Get("/api/getExample", getHandler)
-	r.Get("/api/zincGetExample", getZincBasic)
-	r.Post("/api/getZincSearch", getZincSearch)
-	r.Post("/nameExample", nameExample)
-	r.Get("/postexample", postHandler)
-	r.Post("/postzinc", getZincBasic)
 
-	r.Mount("/posts", postsResource{}.Routes())
+	r.Post("/api/getZincSearch", cmd.GetZincSearch)
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
 

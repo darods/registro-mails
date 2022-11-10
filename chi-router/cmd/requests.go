@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -10,70 +10,7 @@ import (
 	"time"
 )
 
-type Data struct {
-	took      string
-	timed_out string
-}
-
-func simpleMsg(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("Hello World!"))
-}
-
-func getHandler(w http.ResponseWriter, r *http.Request) {
-	//json.NewEncoder(w).Encode("You got me")
-	palabra := "You got me"
-	w.Write([]byte(palabra))
-}
-
-func postHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("POSTZZZZ")
-}
-
-func nameExample(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("name")
-	lastname := r.URL.Query().Get("lastname")
-	w.Write([]byte("hi " + lastname + " " + name))
-}
-
-func getZincBasic(w http.ResponseWriter, r *http.Request) {
-	term := "USA"
-	query := `{
-        "search_type": "match",
-        "query":
-        {
-            "term": "` + term + `",
-            "start_time": "2022-10-01T14:28:31.894Z",
-            "end_time": "2022-10-24T15:28:31.894Z"
-        },
-        "from": 0,
-        "max_results": 20,
-        "_source": []
-    }`
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/olympics/_search", strings.NewReader(query))
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth("admin", "Complexpass#123")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	log.Println(resp.StatusCode)
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(body))
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
-}
-
-func getZincSearch(w http.ResponseWriter, r *http.Request) {
+func GetZincSearch(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
 	query := `{
         "search_type": "match",
@@ -87,7 +24,7 @@ func getZincSearch(w http.ResponseWriter, r *http.Request) {
         "max_results": 20,
         "_source": []
     }`
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails2/_search", strings.NewReader(query))
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails3/_search", strings.NewReader(query))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,13 +47,7 @@ func getZincSearch(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	/*
-		for _, rec := range result.Hits.Hits {
-			fmt.Println(rec.Index)
-			json.NewEncoder(w).Encode(rec)
-		}*/
 	json.NewEncoder(w).Encode(result.Hits.Hits)
-	fmt.Println(string(body))
 
 }
 
@@ -162,10 +93,4 @@ type Response struct {
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
-}
-
-// PrettyPrint to print struct in a readable way
-func PrettyPrint(i interface{}) string {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	return string(s)
 }
