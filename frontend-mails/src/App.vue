@@ -59,7 +59,7 @@
     methods:{
       getTodos(){
         console.log('codigo get TODOS.')
-        axios.post('http://localhost:8081/api/getZincSearch?term=manipulated&from=0&to=20')
+        axios.get('http://localhost:8081/api/getZincSearch?term=manipulated&from=0&to=20')
         .then(response => {
           console.log(response)
           this.todos = response.data
@@ -78,7 +78,7 @@
 
     },
     sendRequest(from, to) {
-        axios.post("http://localhost:8081/api/getZincSearch?term="+this.message+"&from="+from+"&to="+to)
+        axios.get("http://localhost:8081/api/getZincSearch?term="+this.message+"&from="+from+"&to="+to)
             .then(response => {
               console.log(response)
               this.todos = response.data

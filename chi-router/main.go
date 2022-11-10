@@ -35,7 +35,7 @@ func main() {
 		w.Write([]byte("API funcionando!"))
 	})
 
-	r.Post("/api/getZincSearch", cmd.GetZincSearch)
+	r.Get("/api/getZincSearch", cmd.GetZincSearch)
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
 
